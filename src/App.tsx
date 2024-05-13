@@ -1,35 +1,92 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import 
+{
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider
+} from 'react-router-dom';
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+import MainLayout from './layouts/MainLayout';
+import HomePage from './pageScreens/HomePage';
+import JobPostsPage from './pageScreens/JobPostsPage';
+import JobPage, {jobLoader} from './pageScreens/JobPage';
+import NotFoundPage from './pageScreens/NotFoundPage';
+import AddJobPage from './pageScreens/AddJobPage';
+import EditJobPage from './pageScreens/EditJobPage';
 
-export default App
+
+
+const App = () => 
+  {
+    //Add New Job
+    const addJob = async (newJob:any) => 
+    {
+      //const res?
+      await fetch
+        ('/api/jobs', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(newJob),
+        });
+      
+      return;
+    };
+
+    //Delete New Job
+    const deleteJob = async (id:Number) =>
+    {
+      //cons res?
+      await fetch
+      (`/api/jobs/${id}`, {
+        method: "DELETE",
+      });
+    
+    return;
+    }
+
+    //Update Job
+    const updateJob = async (job:any) => 
+      {
+        //const res?
+        await fetch
+          (`/api/jobs/${job.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(job),
+          });
+        
+        return;
+      };
+
+
+    const router = createBrowserRouter
+    (
+      createRoutesFromElements
+      (
+        <Route path="/" element={<MainLayout/>}> 
+          <Route index element={<HomePage/>} />
+          <Route path="/jobs" element={<JobPostsPage/>} />
+          <Route 
+            path="/jobs/:id"
+            element={<JobPage deleteJob={deleteJob} />}
+            loader={jobLoader}
+          />
+          <Route 
+            path="/edit-job/:id"
+            element={<EditJobPage updateJobSubmit={updateJob} />}
+            loader={jobLoader}
+          />
+          <Route path="/add-job" element={<AddJobPage addJobSubmit={addJob}/>} />
+          <Route path="*" element={<NotFoundPage/>} />
+        </Route>
+      )
+    );
+  return  <RouterProvider router={router}/>
+};
+
+export default App;
